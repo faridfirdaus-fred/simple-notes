@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Notes App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">📝 Simple Notes App</h1>
+            <p class="text-gray-600">Aplikasi catatan sederhana dengan CRUD functionality</p>
+        </div>
+
+        <!-- Create Note Button -->
+        <div class="text-center mb-8">
+            <button 
+                id="create-note-btn"
+                class="bg-primary text-white px-8 py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors shadow-lg font-semibold"
+            >
+                ➕ Buat Catatan Baru
+            </button>
+        </div>
+
+        <!-- Modal Overlay -->
+        <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+        <!-- Modal/Popup Form -->
+        <div id="note-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-semibold text-gray-800" id="form-title">Tambah Catatan Baru</h2>
+                        <button 
+                            id="close-modal-btn"
+                            class="text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors"
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="note-form" class="space-y-4">
+                        <input type="hidden" id="note-id" value="">
+                        
+                        <div>
+                            <label for="sender" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Pengirim
+                            </label>
+                            <input 
+                                type="text" 
+                                id="sender" 
+                                name="sender" 
+                                required
+                                maxlength="100"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                placeholder="Masukkan nama pengirim..."
+                            >
+                        </div>
+
+                        <div>
+                            <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+                                Isi Catatan
+                            </label>
+                            <textarea 
+                                id="content" 
+                                name="content" 
+                                required
+                                maxlength="1000"
+                                rows="5"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                                placeholder="Tulis catatan Anda di sini..."
+                            ></textarea>
+                            <div class="text-right text-sm text-gray-500 mt-1">
+                                <span id="char-count">0</span>/1000 karakter
+                            </div>
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <button 
+                                type="submit" 
+                                id="submit-btn"
+                                class="flex-1 bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors font-medium"
+                            >
+                                Simpan Catatan
+                            </button>
+                            
+                            <button 
+                                type="button" 
+                                id="cancel-btn"
+                                class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Daftar Catatan</h2>
+                <div class="text-sm text-gray-500">
+                    Total: <span id="notes-count">0</span> catatan
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="text-center py-8 hidden">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <p class="mt-2 text-gray-600">Memuat catatan...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="text-center py-12 hidden">
+                <div class="text-6xl mb-4">📝</div>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Belum ada catatan</h3>
+                <p class="text-gray-600">Tambahkan catatan pertama Anda di atas!</p>
+            </div>
+
+            <!-- Notes Grid -->
+            <div id="notes-container" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Notes will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm">
+            <div class="flex items-center">
+                <div id="toast-icon" class="flex-shrink-0 mr-3"></div>
+                <div id="toast-message" class="text-sm font-medium text-gray-800"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
