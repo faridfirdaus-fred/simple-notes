@@ -248,36 +248,51 @@ class NotesApp {
             : null;
 
         return `
-            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
-                <div class="mb-3">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-semibold text-gray-800 truncate">
-                            👤 ${this.escapeHtml(note.sender)}
-                        </h3>
-                        <div class="flex gap-1">
+            <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-6 border-2 border-gray-100 hover:border-blue-300 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-2">
+                                <span class="text-white text-sm">👤</span>
+                            </div>
+                            <h3 class="font-bold text-gray-800 text-lg">
+                                ${this.escapeHtml(note.sender)}
+                            </h3>
+                        </div>
+                        <div class="flex gap-2">
                             <button 
                                 onclick="app.editNote(${JSON.stringify(note).replace(/"/g, '&quot;')})"
-                                class="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                class="bg-blue-100 hover:bg-blue-200 text-blue-600 p-2 rounded-xl transition-all duration-300 hover:scale-110"
                                 title="Edit catatan"
                             >
                                 ✏️
                             </button>
                             <button 
                                 onclick="app.deleteNote('${note._id}')"
-                                class="text-red-600 hover:text-red-800 p-1 rounded"
+                                class="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-xl transition-all duration-300 hover:scale-110"
                                 title="Hapus catatan"
                             >
                                 🗑️
                             </button>
                         </div>
                     </div>
-                    <p class="text-gray-700 text-sm leading-relaxed">
-                        ${this.escapeHtml(note.content)}
-                    </p>
+                    <div class="bg-gray-50 rounded-xl p-4 border-l-4 border-blue-400">
+                        <p class="text-gray-700 leading-relaxed font-medium">
+                            ${this.escapeHtml(note.content)}
+                        </p>
+                    </div>
                 </div>
-                <div class="text-xs text-gray-500 border-t border-gray-200 pt-2">
-                    <div>📅 Dibuat: ${createdAt}</div>
-                    ${updatedAt ? `<div>🔄 Diperbarui: ${updatedAt}</div>` : ''}
+                <div class="flex justify-between items-center text-xs bg-gradient-to-r from-gray-100 to-gray-200 rounded-xl p-3">
+                    <div class="flex items-center gap-1">
+                        <span>📅</span>
+                        <span class="font-semibold text-gray-600">Dibuat: ${createdAt}</span>
+                    </div>
+                    ${updatedAt ? `
+                        <div class="flex items-center gap-1">
+                            <span>🔄</span>
+                            <span class="font-semibold text-gray-600">Diperbarui: ${updatedAt}</span>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -302,29 +317,42 @@ class NotesApp {
     showToast(message, type = 'info') {
         const toastIcon = this.toast.querySelector('#toast-icon');
         const toastMessage = this.toast.querySelector('#toast-message');
+        const toastContainer = this.toast.querySelector('div');
+        
+        // Reset classes
+        toastContainer.className = 'bg-white border rounded-2xl shadow-2xl p-4 max-w-sm transform transition-all duration-300';
         
         // Set icon and colors based on type
         if (type === 'success') {
-            toastIcon.innerHTML = '✅';
-            this.toast.querySelector('div').classList.remove('border-red-200', 'border-yellow-200');
-            this.toast.querySelector('div').classList.add('border-green-200');
+            toastIcon.innerHTML = '<div class="bg-green-500 rounded-full p-2 text-white">✅</div>';
+            toastContainer.classList.add('border-green-200', 'bg-green-50');
         } else if (type === 'error') {
-            toastIcon.innerHTML = '❌';
-            this.toast.querySelector('div').classList.remove('border-green-200', 'border-yellow-200');
-            this.toast.querySelector('div').classList.add('border-red-200');
+            toastIcon.innerHTML = '<div class="bg-red-500 rounded-full p-2 text-white">❌</div>';
+            toastContainer.classList.add('border-red-200', 'bg-red-50');
         } else {
-            toastIcon.innerHTML = 'ℹ️';
-            this.toast.querySelector('div').classList.remove('border-green-200', 'border-red-200');
-            this.toast.querySelector('div').classList.add('border-yellow-200');
+            toastIcon.innerHTML = '<div class="bg-blue-500 rounded-full p-2 text-white">ℹ️</div>';
+            toastContainer.classList.add('border-blue-200', 'bg-blue-50');
         }
         
         toastMessage.textContent = message;
+        toastMessage.className = 'text-sm font-bold text-gray-800';
+        
         this.toast.classList.remove('hidden');
         
-        // Auto hide after 3 seconds
+        // Add entrance animation
         setTimeout(() => {
-            this.toast.classList.add('hidden');
-        }, 3000);
+            toastContainer.classList.add('scale-105');
+        }, 50);
+        
+        // Auto hide after 4 seconds
+        setTimeout(() => {
+            toastContainer.classList.remove('scale-105');
+            toastContainer.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                this.toast.classList.add('hidden');
+                toastContainer.classList.remove('scale-95', 'opacity-0');
+            }, 300);
+        }, 4000);
     }
 }
 
