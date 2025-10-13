@@ -5,16 +5,16 @@ services:
     build: .
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
+    # Remove the volumes section for the web service
+    # volumes:
+    #  - .:/app
     environment:
       - NODE_ENV=development
     env_file:
-      - ./.env  # Tambahkan baris ini
+      - ./.env
     depends_on:
       - db
     restart: always
-
   db:
     image: mongo:7.0
     ports:
