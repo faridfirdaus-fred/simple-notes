@@ -9,6 +9,8 @@ services:
       - .:/app
     environment:
       - NODE_ENV=development
+    env_file:
+      - ./.env  # Tambahkan baris ini
     depends_on:
       - db
     restart: always
