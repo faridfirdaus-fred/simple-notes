@@ -5,9 +5,6 @@ services:
     build: .
     ports:
       - "3000:3000"
-    # Remove the volumes section for the web service
-    # volumes:
-    #  - .:/app
     environment:
       - NODE_ENV=development
     env_file:
